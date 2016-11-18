@@ -17,16 +17,15 @@ class uvp_controller (object) :
             self.DEVICE_IP = ip
         else :
             self.DEVICE_IP = ip+":9443"
-        self.opener = _get_the_cookie_and_ssl()
+        self.opener = self._get_the_cookie_and_ssl()
         
     def login(self,username,password):
         print "Trying to Login to Controller..."
         login_url = 'https://'+self.DEVICE_IP+'/api/login'
         urldata = '{\"username\":\"'+username+'\",\"password\":\"'+password+'\"}'
         r = self.opener.open(login_url, urldata)
-        print r.read()
-        print "Logged in successfully"
-        
+        if "ok" in r.read():
+            print "Logged in successfully"        
     
     #-------------------------------------------------------------------
     def _get_the_cookie_and_ssl (self):
