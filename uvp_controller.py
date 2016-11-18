@@ -25,5 +25,5 @@ if len(sys.argv) > 1 :
                 new_account = account(_account_no,_name,_ext,"percipia123",frequency)
                 new_phone = phone("UVP-Executive",_mac,new_account)
                 unifi_controller.add_phone(new_phone)
-                del frequency,new_account,new_phone
-                
+                #unifi_controller.set_alias_by_mac(new_phone.mac,new_account.name)
+                #del frequency,new_account,new_phone

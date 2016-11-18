@@ -31,6 +31,7 @@ class uvp_controller (object) :
         #Configuration Constants
         self.ip = None
         self.opener = None
+        self.data_j = None
     
     def connect(self, ip):
         if ":" in ip :
@@ -74,6 +75,56 @@ class uvp_controller (object) :
         for i in range(0,len(data_j["data"])) :
             if ext in data_j["data"][i]["extension"]:
                 return data_j["data"][i]["_id"]
+    
+    def _find_device_mac_by_ext (self,ext):
+        url = 'https://'+self.ip+'/api/s/default/list/extension'
+        respond_html = self.opener.open (url)
+        data = respond_html.read()
+        import json
+        data_j = json.loads(data)
+        for i in range(0,len(data_j["data"])) :
+            if ext in data_j["data"][i]["extension"]:
+                return data_j["data"][i]["device_mac"]
+            
+    def _update_ext_info(self,_device_id,urldata):
+        url = 'https://'+self.ip+'/api/s/default/upd/device/'+_device_id
+        #print url
+        import json
+        jj = json.dumps (urldata)
+        opener = self.opener
+        opener.addheaders = [("Content-Type", "application/json; charset=utf-8")]
+        opener.addheaders = [("Content-Length", len(jj))]
+        #try : 
+        respond_html = opener.open (url,jj)
+        #except :
+        #    pass  
+    
+    def _find_device_id_from_mac_address(self,mac):
+        url = 'https://'+self.ip+'/api/s/default/stat/device'
+        respond_html = self.opener.open (url)
+        data = respond_html.read()
+        import json
+        data_j = json.loads(data)
+        for i in range(0,len(data_j["data"])) :            
+            if mac in data_j["data"][i]["mac"]:
+                return data_j["data"][i]["_id"]
+            
+    def _update_device_data (self):
+        url = 'https://'+self.ip+'/api/s/default/stat/device'
+        respond_html = self.opener.open (url)
+        data = respond_html.read()
+        import json
+        data_j = json.loads(data)
+        self.device_data = data_j
+    
+    def _update_extension_data(self):
+        url = 'https://'+self.ip+'/api/s/default/list/extension'
+        respond_html = self.opener.open (url)
+        data = respond_html.read()
+        import json
+        data_j = json.loads(data)
+        self.extension_data = data_j
+        
     #-------------------------------------------------------------------
      
     # Functions  
@@ -144,8 +195,22 @@ class uvp_controller (object) :
         import json
         data_j = json.loads(data)
         for i in range(0,len(data_j["data"])) :
-            #ext_id = data_j["data"][i]["_id"]            
             ext =  data_j["data"][i]["extension"]
             self.delete_extension (ext)
-
-
+    
+    def set_alias_by_extension(self,ext,alias):
+        mac = self._find_device_mac_by_ext (ext)
+        self.set_alias_by_mac(mac,alias)
+    
+    def set_alias_by_mac(self,mac,alias):
+        mac = mac.lower()
+        if mac != None and mac != "":
+            temp_database_id = self._find_device_id_from_mac_address(mac)
+            if temp_database_id != None : 
+                urldata = {"name":alias}
+                self._update_ext_info(temp_database_id,urldata)
+                print "Alias set to "+alias+" for Mac "+mac
+            else :
+                print "No Device ("+mac+") found on controller!"
+        else :
+            print "No extension ("+ext+") found / No Devices associated to this extension"
