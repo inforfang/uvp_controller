@@ -1,11 +1,12 @@
 from controller_class import *
-
-unifi_controller = uvp_controller()
-unifi_controller.connect ("10.100.200.9")
-unifi_controller.login("unifi","percipia123")
-
 import sys
+
 if len(sys.argv) > 1 :
+
+    unifi_controller = uvp_controller()
+    unifi_controller.connect ("10.100.200.9")
+    unifi_controller.login("unifi","percipia123")
+
     for i in range(1,len(sys.argv),2):
         if "--clear-all" in sys.argv[i]:
             unifi_controller.clear_extension_list()
@@ -45,3 +46,10 @@ if len(sys.argv) > 1 :
                 del frequency,new_account,new_phone
         else :
             print "Bad Argument !"
+else :
+    print 
+    print "    EXAMPLE : python uvp_controller.py [--argument value]"
+    print 
+    print "    --clear-all    ->   Clear all of extensions from controller "
+    print "    --file [file]  ->   To add extension using the CSV file "
+    print "    --alias [file] ->   To configure devie aliases using CSV file "
