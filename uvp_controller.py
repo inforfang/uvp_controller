@@ -9,7 +9,7 @@ if len(sys.argv) > 1 :
     for i in range(1,len(sys.argv),2):
         if "--clear-all" in sys.argv[i]:
             unifi_controller.clear_extension_list()
-        if "--file" in sys.argv[i]:
+        elif "--file" in sys.argv[i]:
             filename = sys.argv[i+1]
             import csv
             f = open(filename)
@@ -26,7 +26,7 @@ if len(sys.argv) > 1 :
                 new_phone = phone("UVP-Executive",_mac,new_account)
                 unifi_controller.add_phone(new_phone)
                 del frequency,new_account,new_phone
-        if "--alias" in sys.argv[i]:
+        elif "--alias" in sys.argv[i]:
             filename = sys.argv[i+1]
             import csv
             f = open(filename)
@@ -43,3 +43,5 @@ if len(sys.argv) > 1 :
                 new_phone = phone("UVP-Executive",_mac,new_account)
                 unifi_controller.set_alias_by_mac(new_phone.mac,new_account.name)
                 del frequency,new_account,new_phone
+        else :
+            print "Bad Argument !"
