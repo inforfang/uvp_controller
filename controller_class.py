@@ -103,7 +103,8 @@ class uvp_controller (object) :
         data_j = self.device_data
         for i in range(0,len(data_j["data"])) :
             if mac in data_j["data"][i]["mac"]:
-                return data_j["data"][i]["_id"]
+                if data_j["data"][i]["adopted"] == True:
+                    return data_j["data"][i]["_id"]
     
     def update_extension_data(self):
         url = 'https://'+self.ip+'/api/s/default/list/extension'
