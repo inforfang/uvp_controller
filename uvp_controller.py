@@ -1,22 +1,45 @@
+import urllib2
+import urllib
+
 class uvp_controller (object) :
+    
+    #Initialization of global varibles in class 
+    def __init__(self):
+        #Configuration Constants
+        self.DEVICE_IP = "10.100.200.9:9443"
+        self.PBX_IP = "10.100.200.10"
+        self.PASSWORD = "percipia123"
+        self.GUEST_VOICE_MAIL = "*97"
+        self.opener = None
+    
+    def connect(self, ip):
+        if ":" in ip :
+            self.DEVICE_IP = ip
+        else :
+            self.DEVICE_IP = ip+":9443"
+        self.opener = _get_the_cookie_and_ssl()
+        
+    def login(self,username,password):
+        print "Trying to Login to Controller..."
+        login_url = 'https://'+self.DEVICE_IP+'/api/login'
+        urldata = '{\"username\":\"'+username+'\",\"password\":\"'+password+'\"}'
+        r = self.opener.open(login_url, urldata)
+        print r.read()
+        print "Logged in successfully"
+        
+    
     #-------------------------------------------------------------------
-    def get_the_cookie ():
+    def _get_the_cookie_and_ssl (self):
         import cookielib
+        import ssl
         cj = cookielib.CookieJar()
         ctx = ssl._create_unverified_context()
         opener = urllib2.build_opener(urllib2.HTTPSHandler(context=ctx),urllib2.HTTPCookieProcessor(cj))
-        r= opener.open('https://'+DEVICE_IP+'/')
-        return opener
+        r= opener.open('https://'+self.DEVICE_IP+'/')
+        return opener   
     
-    def login_to_webgui(opener):
-        print "Trying to Login to Controller..."
-        login_url = 'https://'+DEVICE_IP+'/api/login'
-        urldata = '{\"username\":\"unifi\",\"password\":\"percipia123\"}'
-        r = opener.open(login_url, urldata)
-        print "Logged in successfully"
-    
-    def add_extension (opener,account_id,mac,ext,roomno,name,pbx):
-        url = 'https://'+DEVICE_IP+'/api/s/default/add/extension'
+    def add_extension (self,opener,account_id,mac,ext,roomno,name,pbx):
+        url = 'https://'+self.DEVICE_IP+'/api/s/default/add/extension'
         urldata = {"sip_id":account_id,
                    "extension":ext,
                    "name":name,
@@ -59,8 +82,8 @@ class uvp_controller (object) :
         respond_html = opener.open (url,jj)
         print "Extension "+ext+ " added successfully to Controller"
     
-    def delete_all_ext (opener):
-        url = 'https://'+DEVICE_IP+'/api/s/default/list/extension'
+    def delete_all_ext (self,opener):
+        url = 'https://'+self.DEVICE_IP+'/api/s/default/list/extension'
         respond_html = opener.open (url)
         data = respond_html.read()
         #print type (data)
@@ -72,8 +95,8 @@ class uvp_controller (object) :
             ext =  data_j["data"][i]["extension"]
             delete_ext (opener,ext,ext_id)
     
-    def extension_id (opener,ext):
-        url = 'https://'+DEVICE_IP+'/api/s/default/list/extension'
+    def extension_id (self,opener,ext):
+        url = 'https://'+self.DEVICE_IP+'/api/s/default/list/extension'
         respond_html = opener.open (url)
         data = respond_html.read()
         import json
@@ -81,8 +104,8 @@ class uvp_controller (object) :
         if ext in data_j["data"][i]["extension"]:
             return data_j["data"][i]["_id"]
     
-    def delete_ext (opener,ext,ext_id):
-        url = 'https://'+DEVICE_IP+'/api/s/default/del/extension/'+ext_id
+    def delete_ext (self,opener,ext,ext_id):
+        url = 'https://'+self.DEVICE_IP+'/api/s/default/del/extension/'+ext_id
         try :
             respond_html = opener.open (url,{'':''}).read()
         except :
@@ -92,35 +115,3 @@ class uvp_controller (object) :
 #-------------------------------------------------------------------
 
 
-
-# ====================
-# Main Function 
-# ====================
-import urllib2
-import urllib
-import ssl
-import csv
-
-DEVICE_IP = "10.100.200.9:9443"
-#PBX_IP = "10.100.200.10"
-PASSWORD = "percipia123"
-GUEST_VOICE_MAIL = "*97"
-
-opener = get_the_cookie()
-login_to_webgui(opener)
-delete_all_ext(opener)
-
-"""
-f = open('test.csv')
-csv_f = csv.reader(f)
-for row in csv_f:
-    account_id = row[0]
-    mac_ = row[1] 
-    # 44D9E70570C1 ----Convert it to-----> 44:d9:e7:05:70:00
-    mac = (mac_[0:2]+':'+mac_[2:4]+':'+mac_[4:6]+':'+mac_[6:8]+':'+mac_[8:10]+':'+mac_[10:12]).lower()
-    ext = row[2]
-    roomno = row[3]
-    name = row[4]
-    pbx = row[5]
-    add_extension (opener,account_id,mac,ext,roomno,name,pbx)
-"""
