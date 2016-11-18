@@ -31,7 +31,8 @@ class uvp_controller (object) :
         #Configuration Constants
         self.ip = None
         self.opener = None
-        self.data_j = None
+        self.device_data = None
+        self.extention_data = None
     
     def connect(self, ip):
         if ":" in ip :
@@ -47,7 +48,14 @@ class uvp_controller (object) :
         r = self.opener.open(login_url, urldata)
         if "ok" in r.read():
             print "Logged in successfully"        
+        self.update_data()
     
+    def update_data(self):
+        print "Updating data ...",
+        self.device_data = self.update_device_data()
+        self.extention_data = self.update_extension_data()
+        print "Complete!"
+        
     #Internal Functions 
     #-------------------------------------------------------------------
     def _get_the_cookie_and_ssl (self):
@@ -67,21 +75,13 @@ class uvp_controller (object) :
             pass
       
     def _find_database_id_for_extension(self,ext):
-        url = 'https://'+self.ip+'/api/s/default/list/extension'
-        respond_html = self.opener.open (url)
-        data = respond_html.read()
-        import json
-        data_j = json.loads(data)
+        data_j = self.extention_data
         for i in range(0,len(data_j["data"])) :
             if ext in data_j["data"][i]["extension"]:
                 return data_j["data"][i]["_id"]
     
     def _find_device_mac_by_ext (self,ext):
-        url = 'https://'+self.ip+'/api/s/default/list/extension'
-        respond_html = self.opener.open (url)
-        data = respond_html.read()
-        import json
-        data_j = json.loads(data)
+        data_j = self.extention_data
         for i in range(0,len(data_j["data"])) :
             if ext in data_j["data"][i]["extension"]:
                 return data_j["data"][i]["device_mac"]
@@ -100,31 +100,27 @@ class uvp_controller (object) :
         #    pass  
     
     def _find_device_id_from_mac_address(self,mac):
-        url = 'https://'+self.ip+'/api/s/default/stat/device'
-        respond_html = self.opener.open (url)
-        data = respond_html.read()
-        import json
-        data_j = json.loads(data)
-        for i in range(0,len(data_j["data"])) :            
+        data_j = self.device_data
+        for i in range(0,len(data_j["data"])) :
             if mac in data_j["data"][i]["mac"]:
                 return data_j["data"][i]["_id"]
-            
-    def _update_device_data (self):
-        url = 'https://'+self.ip+'/api/s/default/stat/device'
-        respond_html = self.opener.open (url)
-        data = respond_html.read()
-        import json
-        data_j = json.loads(data)
-        self.device_data = data_j
     
-    def _update_extension_data(self):
+    def update_extension_data(self):
         url = 'https://'+self.ip+'/api/s/default/list/extension'
         respond_html = self.opener.open (url)
         data = respond_html.read()
         import json
         data_j = json.loads(data)
-        self.extension_data = data_j
+        return data_j
         
+    def update_device_data(self):
+        url = 'https://'+self.ip+'/api/s/default/stat/device'
+        respond_html = self.opener.open (url)
+        data = respond_html.read()
+        import json
+        data_j = json.loads(data)
+        return data_j
+    
     #-------------------------------------------------------------------
      
     # Functions  
