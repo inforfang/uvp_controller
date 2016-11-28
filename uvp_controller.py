@@ -28,6 +28,7 @@ if len(sys.argv) > 1 :
                 new_phone = phone("UVP-Executive",_mac,new_account)
                 unifi_controller.add_phone(new_phone)
                 del frequency,new_account,new_phone
+            f.close()
         
         elif "--alias" in sys.argv[i]:
             filename = sys.argv[i+1]
@@ -46,7 +47,7 @@ if len(sys.argv) > 1 :
                 new_phone = phone("UVP-Executive",_mac,new_account)
                 unifi_controller.set_alias_by_mac(new_phone.mac,new_account.name)
                 del frequency,new_account,new_phone
-             
+            f.close()
         else :
             print "Bad Argument !"
 
